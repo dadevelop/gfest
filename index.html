@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Califica tu experiencia en nuestro stand.">
+  <title>Califica nuestro stand | Taller de Medios Interactivos</title>
+  <style>
+    :root { --yellow:#f9bd00; --ink:#171717; --page:#f7f7f5; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; min-height:100svh; padding:18px 16px 28px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--page); color:var(--ink);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    main { width:min(100%,390px); margin:auto; text-align:center; }
+    .brand { height:154px; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; }
+    .brand img { display:block; width:min(283px,88%); max-height:150px; object-fit:contain; }
+    .card {
+      min-height:470px; display:flex; flex-direction:column; justify-content:flex-start;
+      background:#fff; border-radius:22px; padding:42px 24px 28px;
+      box-shadow:0 7px 24px rgba(0,0,0,.055);
+    }
+    h1 { margin:0 0 14px; font-size:25px; line-height:1.2; font-weight:750; letter-spacing:-.45px; }
+    .intro { margin:0 auto; max-width:280px; color:#616161; font-size:14px; line-height:1.5; }
+    .stars { display:flex; justify-content:center; align-items:center; gap:7px; margin:27px 0 20px; }
+    .star {
+      width:46px; height:50px; padding:0; border:0; background:transparent;
+      color:#d5d5d5; font-size:43px; line-height:1; cursor:pointer;
+      transition:transform .12s ease,color .12s ease; -webkit-tap-highlight-color:transparent;
+    }
+    .star.active { color:var(--yellow); }
+    .star:active { transform:scale(.91); }
+    .star:focus-visible,#send:focus-visible { outline:3px solid #8b6b00; outline-offset:4px; border-radius:8px; }
+    #hint { min-height:20px; margin:0 0 28px; color:#777; font-size:12px; line-height:1.4; }
+    #send {
+      width:100%; min-height:52px; border:0; border-radius:11px;
+      background:#2c2c2c; color:#fff; font-size:15px; font-weight:650; cursor:pointer;
+      transition:opacity .15s ease,transform .12s ease;
+    }
+    #send:active:not(:disabled) { transform:scale(.99); }
+    #send:disabled { opacity:.48; cursor:not-allowed; }
+    #status { min-height:22px; margin:16px 0 0; color:#b42318; font-size:13px; line-height:1.4; }
+    .fine { margin:18px 0 0; color:#8a8a8a; font-size:11px; line-height:1.4; }
+    .success {
+      min-height:410px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      animation:appear .28s ease-out both;
+    }
+    .success-mark {
+      width:68px; height:68px; margin-bottom:25px; display:grid; place-items:center;
+      border-radius:50%; background:#fff5cf; color:#8a6800; font-size:36px; font-weight:700;
+    }
+    .success h1 { margin-bottom:14px; }
+    .success p { max-width:265px; margin:0; color:#666; font-size:14px; line-height:1.6; }
+    .success .thanks-small { margin-top:23px; color:#8a8a8a; font-size:12px; }
+    @keyframes appear { from {opacity:0;transform:translateY(8px)} to {opacity:1;transform:translateY(0)} }
+    @media (max-height:740px) {
+      body { align-items:flex-start; }
+      .brand { height:120px; }
+      .brand img { max-height:116px; }
+      .card { min-height:450px; padding-top:34px; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><img src="logo-tmi.png" alt="Taller de Medios Interactivos"></div>
+    <section class="card" id="rating-card" aria-labelledby="page-title">
+      <h1 id="page-title">¡Califica nuestro stand!</h1>
+      <p class="intro">Tu opinión nos ayuda a seguir mejorando.</p>
+      <div class="stars" role="group" aria-label="Selecciona tu puntuación">
+        <button class="star" type="button" data-value="1" aria-label="1 estrella" aria-pressed="false">★</button>
+        <button class="star" type="button" data-value="2" aria-label="2 estrellas" aria-pressed="false">★</button>
+        <button class="star" type="button" data-value="3" aria-label="3 estrellas" aria-pressed="false">★</button>
+        <button class="star" type="button" data-value="4" aria-label="4 estrellas" aria-pressed="false">★</button>
+        <button class="star" type="button" data-value="5" aria-label="5 estrellas" aria-pressed="false">★</button>
+      </div>
+      <p id="hint" aria-live="polite">Toca una estrella para indicar tu experiencia</p>
+      <button id="send" type="button" disabled>Enviar puntuación</button>
+      <p id="status" role="status" aria-live="polite"></p>
+      <p class="fine">Tu calificación se enviará de forma anónima.</p>
+    </section>
+  </main>
+  <script>
+    // La clave publishable está pensada para uso público en el navegador.
+    // La protección de datos depende de los permisos y políticas RLS de Supabase.
+    const SUPABASE_URL = "https://epjimndwbdnapgvheovs.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_vJgDXSHvy7CX-9RjlhVPsg_jFoEcVNm";
+    const stars = [...document.querySelectorAll(".star")];
+    const send = document.querySelector("#send");
+    const hint = document.querySelector("#hint");
+    const status = document.querySelector("#status");
+    const card = document.querySelector("#rating-card");
+    let rating = 0;
+    let sending = false;
+
+    function paint(value) {
+      stars.forEach((star,index) => {
+        star.classList.toggle("active",index < value);
+        star.setAttribute("aria-pressed",String(index + 1 === value));
+      });
+      hint.textContent = value ? `${value} de 5 estrellas` : "Toca una estrella para indicar tu experiencia";
+      send.disabled = !value || sending;
+    }
+
+    stars.forEach(star => star.addEventListener("click",() => {
+      if (sending) return;
+      rating = Number(star.dataset.value);
+      paint(rating);
+      status.textContent = "";
+    }));
+
+    send.addEventListener("click",async () => {
+      if (!rating || sending) return;
+      sending = true;
+      send.disabled = true;
+      send.textContent = "Enviando…";
+      status.textContent = "";
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/puntuaciones`,{
+          method:"POST",
+          headers:{
+            "apikey":SUPABASE_KEY,
+            "Authorization":`Bearer ${SUPABASE_KEY}`,
+            "Content-Type":"application/json",
+            "Prefer":"return=minimal"
+          },
+          body:JSON.stringify({puntuacion:rating})
+        });
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(detail || `Error ${response.status}`);
+        }
+        card.innerHTML = `
+          <div class="success" role="status" aria-live="polite">
+            <div class="success-mark" aria-hidden="true">✓</div>
+            <h1>¡Muchas gracias por tu calificación!</h1>
+            <p>Agradecemos que te hayas tomado el tiempo de compartir tu experiencia.</p>
+            <p class="thanks-small">¡Que tengas un excelente día!</p>
+          </div>`;
+      } catch (error) {
+        console.error("No se pudo registrar la puntuación:",error);
+        sending = false;
+        send.textContent = "Enviar puntuación";
+        status.textContent = "No pudimos enviar tu calificación. Revisa tu conexión e inténtalo nuevamente.";
+        send.disabled = !rating;
+      }
+    });
+  </script>
+</body>
+</html>
