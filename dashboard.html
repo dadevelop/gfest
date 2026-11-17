@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7f5">
+  <title>Resultados de puntuación | Taller de Medios Interactivos</title>
+  <style>
+    :root{--ink:#242424;--muted:#747474;--line:#e9e8e4;--paper:#f7f7f5;--card:#fff;--gold:#efb928;--gold-soft:#fff5d8;--green:#247b50}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .wrap{width:min(920px,calc(100% - 32px));margin:0 auto;padding:26px 0 48px}
+    header{text-align:center;margin-bottom:22px}.brand{display:block;width:min(260px,72%);height:105px;object-fit:contain;margin:0 auto 14px}
+    .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:750}
+    h1{font-size:clamp(27px,5vw,40px);line-height:1.12;margin:9px 0 8px;letter-spacing:-.04em}
+    .intro{margin:0 auto;color:var(--muted);font-size:15px;line-height:1.6;max-width:560px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(19px,4vw,30px);box-shadow:0 10px 35px #25251d08}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 16px}
+    .stat{background:#fbfaf7;border:1px solid var(--line);border-radius:17px;padding:20px}
+    .stat-label{color:var(--muted);font-size:13px;font-weight:650}.stat-value{font-size:clamp(34px,7vw,48px);font-weight:800;letter-spacing:-.05em;margin-top:8px;line-height:1.05}
+    .stars{color:var(--gold);letter-spacing:2px;font-size:clamp(20px,4vw,27px);white-space:nowrap}
+    .outof{font-size:17px;color:var(--muted);font-weight:600;letter-spacing:0}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:25px 0 16px}
+    h2{font-size:18px;margin:0;letter-spacing:-.02em}.total-tag{font-size:12px;color:var(--muted);background:#f3f2ef;border-radius:99px;padding:7px 10px}
+    .rows{display:grid;gap:13px}.rating-row{display:grid;grid-template-columns:95px 1fr 35px;align-items:center;gap:12px}
+    .rating-label{font-size:14px;font-weight:700;white-space:nowrap}.rating-label .mini{color:var(--gold);letter-spacing:0}
+    .track{height:12px;background:#f0efec;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,#f5d16c,#eab329);border-radius:99px;transition:width .55s ease}
+    .count{text-align:right;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+    .note{margin-top:24px;padding:16px;border-radius:15px;background:var(--gold-soft);color:#6f571b;font-size:13px;line-height:1.55}
+    .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;color:var(--muted);font-size:12px}
+    button{border:1px solid var(--line);background:white;color:var(--ink);border-radius:99px;padding:10px 15px;font-weight:700;cursor:pointer}button:hover{background:#f5f4f0}button:disabled{opacity:.55;cursor:wait}
+    .status{font-size:12px;color:var(--muted);margin-top:12px;min-height:18px}.status.error{color:#b42318}
+    .empty{display:none;text-align:center;color:var(--muted);padding:22px 0 5px}
+    @media(max-width:560px){.wrap{padding-top:18px}.brand{height:86px}.stats{gap:10px}.stat{padding:16px}.rating-row{grid-template-columns:83px 1fr 26px;gap:8px}.rating-label{font-size:12px}.footer{align-items:flex-start;flex-direction:column}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <img class="brand" src="./logo-tmi.png" alt="Taller de Medios Interactivos" onerror="this.style.display='none'">
+      <div class="eyebrow">Resultados de participación</div>
+      <h1>¿Cómo calificaron nuestro stand?</h1>
+      <p class="intro">Conoce los resultados de las opiniones compartidas por nuestros visitantes. Cada voto cuenta.</p>
+    </header>
+
+    <section class="panel" aria-live="polite">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Personas que votaron</div>
+          <div class="stat-value" id="total">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Calificación promedio</div>
+          <div class="stat-value" id="average">— <span class="outof">/ 5</span></div>
+          <div class="stars" id="averageStars" aria-label="Promedio en estrellas">☆☆☆☆☆</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Distribución de puntuaciones</h2>
+        <span class="total-tag" id="votesLabel">0 votos</span>
+      </div>
+      <div class="rows" id="distribution">
+        <div class="rating-row"><div class="rating-label"><span class="mini">★★★★★</span></div><div class="track"><div class="fill"></div></div><div class="count">—</div></div>
+        <div class="rating-row"><div class="rating-label"><span class="mini">★★★★</span>☆</div><div class="track"><div class="fill"></div></div><div class="count">—</div></div>
+        <div class="rating-row"><div class="rating-label"><span class="mini">★★★</span>☆☆</div><div class="track"><div class="fill"></div></div><div class="count">—</div></div>
+        <div class="rating-row"><div class="rating-label"><span class="mini">★★</span>☆☆☆</div><div class="track"><div class="fill"></div></div><div class="count">—</div></div>
+        <div class="rating-row"><div class="rating-label"><span class="mini">★</span>☆☆☆☆</div><div class="track"><div class="fill"></div></div><div class="count">—</div></div>
+      </div>
+      <div class="empty" id="empty">Todavía no hay puntuaciones. ¡Sé la primera persona en participar!</div>
+      <div class="note">Estos resultados representan las calificaciones enviadas por los visitantes de forma anónima. Gracias por ayudarnos a mejorar.</div>
+      <div class="status" id="status" role="status">Conectando con los resultados…</div>
+      <div class="footer">
+        <span id="updated">Los datos se actualizan automáticamente.</span>
+        <button id="refresh" type="button">↻ Actualizar resultados</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Clave publishable: está diseñada para uso en el navegador.
+    // Nunca coloques aquí una clave service_role o secret.
+    const SUPABASE_URL = "https://epjimndwbdnapgvheovs.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vJgDXSHvy7CX-9RjlhVPsg_jFoEcVNm";
+    const endpoint = `${SUPABASE_URL}/rest/v1/rpc/obtener_resumen_puntuaciones`;
+
+    const $ = (id) => document.getElementById(id);
+    const number = (value) => Number(value || 0).toLocaleString("es-PA");
+    const stars = (value) => {
+      const rounded = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+      return "★".repeat(rounded) + "☆".repeat(5 - rounded);
+    };
+
+    async function loadResults() {
+      const button = $("refresh");
+      const status = $("status");
+      button.disabled = true;
+      status.classList.remove("error");
+      status.textContent = "Actualizando resultados…";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: "{}",
+          cache: "no-store"
+        });
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(`Supabase respondió ${response.status}. ${detail}`);
+        }
+        const payload = await response.json();
+        const data = Array.isArray(payload) ? payload[0] : payload;
+        if (!data) throw new Error("No se recibieron datos del resumen.");
+
+        const total = Number(data.total_votos || 0);
+        const average = Number(data.promedio || 0);
+        $("total").textContent = number(total);
+        $("average").innerHTML = `${average.toFixed(2)} <span class="outof">/ 5</span>`;
+        $("averageStars").textContent = stars(average);
+        $("averageStars").setAttribute("aria-label", `Promedio ${average.toFixed(2)} de 5 estrellas`);
+        $("votesLabel").textContent = `${number(total)} ${total === 1 ? "voto" : "votos"}`;
+
+        const counts = [5,4,3,2,1].map(n => Number(data[`votos_${n}`] || 0));
+        document.querySelectorAll(".rating-row").forEach((row, index) => {
+          const count = counts[index];
+          row.querySelector(".fill").style.width = `${total ? (count / total) * 100 : 0}%`;
+          row.querySelector(".count").textContent = number(count);
+          row.querySelector(".track").setAttribute("aria-label", `${count} votos`);
+        });
+        $("empty").style.display = total === 0 ? "block" : "none";
+        $("distribution").style.display = total === 0 ? "none" : "grid";
+        const now = new Date();
+        $("updated").textContent = `Última actualización: ${now.toLocaleTimeString("es-PA", {hour:"2-digit", minute:"2-digit"})}`;
+        status.textContent = "Resultados actualizados correctamente.";
+      } catch (error) {
+        console.error(error);
+        status.classList.add("error");
+        status.textContent = "No pudimos cargar los resultados. Verifica la conexión e inténtalo de nuevo.";
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    $("refresh").addEventListener("click", loadResults);
+    loadResults();
+    setInterval(loadResults, 30000);
+  </script>
+</body>
+</html>
